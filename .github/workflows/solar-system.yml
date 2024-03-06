@@ -42,7 +42,11 @@ jobs:
           #And you cannot debug the issue without seeing the test results but is is not available since this setp will be skipped in a failure scenario.
           #To overcome that, we can use expressions to to run Archive Test Result step always irrespective of above step's state
             - name: Archive Test Result
-              if: steps.node-unit-testing-step.outcome == 'failure' || steps.node-unit-testing-step.outcome == 'success'
+              #In case of conditionif: steps.node-unit-testing-step.outcome == 'failure' || steps.node-unit-testing-step.outcome == 'success'
+              #Although, this condition is true, this steps will still be skipped in case of failure. Its beacause, a deafult status check of success() is applied unles you include other functions.
+              # So, the below condition will be success() && (steps.node-unit-testing-step.outcome == 'failure' || steps.node-unit-testing-step.outcome == 'success'). The condition will be false when the previous step is failed. Hence the step will be skipped.
+              #Conditionif: failure() && (steps.node-unit-testing-step.outcome == 'failure' || steps.node-unit-testing-step.outcome == 'success') will only run his step in case of failure and in success scenario, this step will be skipped.
+              if: always() #runs irrespective of the ststus of previous step
               uses: actions/upload-artifact@v3
               with:
                 name: Mocha-Test-Result
