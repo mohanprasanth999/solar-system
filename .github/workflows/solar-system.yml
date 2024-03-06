@@ -6,8 +6,8 @@ on:
         branches:
             - main
             - 'feature/*'
-
-env:       #workflow fails at testing job due to unestablishment of MongoDB connection if these value are not passed.
+#workflow fails at testing job due to unestablishment of MongoDB connection if these value are not passed.
+env:      
     MONGO_URI: 'mongodb+srv://supercluster.d83jj.mongodb.net/superData'
     MONGO_USERNAME: ${{ vars.MONGO_USERNAME }}
     MONGO_PASSWORD: ${{ secrets.MONGO_PASSWORD }}
@@ -17,7 +17,7 @@ jobs:
         name: Unit Testing
         strategy:
             matrix:
-                nodejs_version: [18, 19, 20]
+                nodejs_version: [18, 20]
                 operating_system: [ubuntu-latest, macos-latest]
                 exclude:
                     - nodejs_version: 18
@@ -36,15 +36,19 @@ jobs:
               run: npm install
             
             - name: Unit Testing
+              id: node-unit-testing-step    
               run: npm test
-
+          #If the above Unit Testing step fails(for example, failed test case or syntax error), the Archive Test Result step will be skipped. 
+          #And you cannot debug the issue without seeing the test results but is is not available since this setp will be skipped in a failure scenario.
+          #To overcome that, we can use expressions to to run Archive Test Result step always irrespective of above step's state
             - name: Archive Test Result
+              if: steps.node-unit-testing-step.outcome == 'failure' || steps.node-unit-testing-step.outcome == 'success'
               uses: actions/upload-artifact@v3
               with:
                 name: Mocha-Test-Result
                 path: test-results.xml
-    
-    code-coverage:                        #Need to setup nodejs first since its a different job  ##runs in parallel with unit-testing job
+    #Need to setup nodejs first since its a different job  ##runs in parallel with unit-testing job
+    code-coverage:       
         name: Code-Coverage
         runs-on: ubuntu-latest
         steps:
@@ -60,7 +64,7 @@ jobs:
               run: npm install
 
             - name: Check Code Coverage
-              continue-on-error: true
+              continue-on-error: true   #We want this job to be run even if the coverage is below the threshold
               run: npm run coverage
 
             - name: Archive Test Result
