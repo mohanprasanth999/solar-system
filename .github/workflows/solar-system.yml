@@ -110,9 +110,18 @@ jobs:
                 name: Code-Coverage-Result
                 path: coverage
                 retention-days: 5
-
+                
     Docker:
       name: Containerization
+      services:
+        mongo-db:
+          image: siddharth67/mongo-db:non-prod   #non prod db
+          ports:
+            - 27017:27017   #port mapping between local host and service container
+      env:    #env variables defined at job level takes precedence over the env variable defined at workflo level
+        MONGO_URI: 'mongodb://localhost:27017/superData'
+        MONGO_USERNAME: non-prod-user
+        MONGO_PASSWORD: non-prod-password
       permissions:          #permissions added to write packages to github token
         packages: write
       runs-on: ubuntu-latest
@@ -142,10 +151,6 @@ jobs:
             tags: ${{ vars.DOCKERHUB_USERNAME }}/solar-system:${{ github.sha }}  #SHA value of the commit id in github
         
         - name: Docker Image Testing
-          env:    #env variables defined at job level takes precedence over the env variable defined at workflo level
-            MONGO_URI: 'mongodb://localhost:27017/superData'
-            MONGO_USERNAME: non-prod-user
-            MONGO_PASSWORD: non-prod-password
           run: |
             docker images
             docker run --name solar-system-app -d \
