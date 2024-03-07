@@ -13,17 +13,17 @@ env:      #These credentials belong to prod database and its going to impact the
     MONGO_PASSWORD: ${{ secrets.MONGO_PASSWORD }}
 
 jobs:
-    unit-testing:
+    unit-testing:              #Example of utilizing service container with job steps running in hosted runner
         name: Unit Testing
         services:
           mongo-db:
             image: siddharth67/mongo-db:non-prod   #non prod db
             ports:
               - 27017:27017   #port mapping between local host and service container
-            env:    #env variables defined at job level takes precedence over the env variable defined at workflo level
-              MONGO_URI: 'mongodb://localhost:27017/superData'
-              MONGO_USERNAME: non-prod-user
-              MONGO_PASSWORD: non-prod-password ## for demo purpose, the credentials are hardcoded
+        env:    #env variables defined at job level takes precedence over the env variable defined at workflo level
+          MONGO_URI: 'mongodb://localhost:27017/superData'
+          MONGO_USERNAME: non-prod-user
+          MONGO_PASSWORD: non-prod-password ## for demo purpose, the credentials are hardcoded
         strategy:
             matrix:
                 nodejs_version: [18, 20]
@@ -68,17 +68,28 @@ jobs:
                 path: test-results.xml
 
     #Need to setup nodejs first since its a different job  ##runs in parallel with unit-testing job
-    code-coverage:       
+    code-coverage:       #Example of utilizing job container(for running steps) and service container
         name: Code-Coverage
+        container:
+          image: node:18
+        services:
+          mongo-db:
+            image: siddharth67/mongo-db:non-prod   #non prod db
+            options:
+              --name mongo  #job container name label
+            env:    #env variables defined at job level takes precedence over the env variable defined at workflo level
+              MONGO_URI: 'mongodb://mongo:27017/superData'  #'mongo' name is how we refer to the service container
+              MONGO_USERNAME: non-prod-user
+              MONGO_PASSWORD: non-prod-password ## for demo purpose, the credentials are hardcoded
         runs-on: ubuntu-latest
         steps:
             - name: Checkout Repository
               uses: actions/checkout@v4
             
-            - name: Setup NodeJS Version - 18
-              uses: actions/setup-node@v3
-              with:
-                node-version: 18
+            # - name: Setup NodeJS Version - 18   #As we are using job container, we don't need this step to setup NodeJS
+            #   uses: actions/setup-node@v3
+            #   with:
+            #     node-version: 18
 
             - name: Cache NPM Dependencies
               uses: actions/cache@v3
