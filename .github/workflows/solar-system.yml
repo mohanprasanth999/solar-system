@@ -126,4 +126,12 @@ jobs:
             echo Testing Image URL using wget
             wget -q -O - 127.0.0.1:3000/live | grep live
           #We are not using docker container's IP to test here. Instead, we are using local host with live endpoint defined in app.js
+        
+        - name: Docker Push
+          uses: docker/build-push-action@v4
+          with:
+            context: .
+            push: true
+            tags: ${{ vars.DOCKERHUB_USERNAME }}/solar-system:${{ github.sha }}
+
 
