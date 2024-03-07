@@ -77,10 +77,10 @@ jobs:
             image: siddharth67/mongo-db:non-prod   #non prod db
             options:
               --name mongo  #job container name label
-            env:    #env variables defined at job level takes precedence over the env variable defined at workflo level
-              MONGO_URI: 'mongodb://mongo:27017/superData'  #'mongo' name is how we refer to the service container
-              MONGO_USERNAME: non-prod-user
-              MONGO_PASSWORD: non-prod-password ## for demo purpose, the credentials are hardcoded
+        env:    #env variables defined at job level takes precedence over the env variable defined at workflo level
+          MONGO_URI: 'mongodb://mongo:27017/superData'  #'mongo' name is how we refer to the service container
+          MONGO_USERNAME: non-prod-user
+          MONGO_PASSWORD: non-prod-password ## for demo purpose, the credentials are hardcoded
         runs-on: ubuntu-latest
         steps:
             - name: Checkout Repository
