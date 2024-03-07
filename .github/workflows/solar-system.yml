@@ -7,7 +7,7 @@ on:
             - main
             - 'feature/*'
 #workflow fails at testing job due to unestablishment of MongoDB connection if these value are not passed.
-env:      
+env:      #These credentials belong to prod database and its going to impact the performance of of the prod db. Its never recommended to use prod db for testing the app. Instead, use dedicated db for testing.
     MONGO_URI: 'mongodb+srv://supercluster.d83jj.mongodb.net/superData'
     MONGO_USERNAME: ${{ vars.MONGO_USERNAME }}
     MONGO_PASSWORD: ${{ secrets.MONGO_PASSWORD }}
@@ -15,6 +15,15 @@ env:
 jobs:
     unit-testing:
         name: Unit Testing
+        services:
+          mongo-db:
+            image: siddharth67/mongo-db:non-prod   #non prod db
+            ports:
+              - 27017:27017   #port mapping between local host and service container
+            env:    #env variables defined at job level takes precedence over the env variable defined at workflo level
+              MONGO_URI: 'mongodb://localhost:27017/superData'
+              MONGO_USERNAME: non-prod-user
+              MONGO_PASSWORD: non-prod-password ## for demo purpose, the credentials are hardcoded
         strategy:
             matrix:
                 nodejs_version: [18, 20]
@@ -44,9 +53,9 @@ jobs:
             - name: Unit Testing
               id: node-unit-testing-step    
               run: npm test
-          #If the above Unit Testing step fails(for example, failed test case or syntax error), the Archive Test Result step will be skipped. 
-          #And you cannot debug the issue without seeing the test results but is is not available since this setp will be skipped in a failure scenario.
-          #To overcome that, we can use expressions to to run Archive Test Result step always irrespective of above step's state
+            #If the above Unit Testing step fails(for example, failed test case or syntax error), the Archive Test Result step will be skipped. 
+            #And you cannot debug the issue without seeing the test results but is is not available since this setp will be skipped in a failure scenario.
+            #To overcome that, we can use expressions to to run Archive Test Result step always irrespective of above step's state
             - name: Archive Test Result
               #In case of conditionif: steps.node-unit-testing-step.outcome == 'failure' || steps.node-unit-testing-step.outcome == 'success'
               #Although, this condition is true, this steps will still be skipped in case of failure. Its beacause, a deafult status check of success() is applied unles you include other functions.
@@ -57,6 +66,7 @@ jobs:
               with:
                 name: Mocha-Test-Result
                 path: test-results.xml
+
     #Need to setup nodejs first since its a different job  ##runs in parallel with unit-testing job
     code-coverage:       
         name: Code-Coverage
