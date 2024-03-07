@@ -92,6 +92,7 @@ jobs:
     Docker:
       name: Containerization
       runs-on: ubuntu-latest
+      needs: [unit-testing, code-coverage] #this job should run only after unit testing and code coverage
       steps:
         - name: Checkout Repository
           uses: actions/checkout@v4
