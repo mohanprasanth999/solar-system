@@ -176,4 +176,42 @@ jobs:
               ${{ vars.DOCKERHUB_USERNAME }}/solar-system:${{ github.sha }}
               ghcr.io/${{ github.repository_owner }}/solar-system:${{ github.sha }}
 
+    Dev-Deploy:
+      needs: Docker
+      runs-on: ubuntu-latest
+      steps:
+        - name: Checkout Repo
+          uses: actions/checkout@v4
+        
+        # For K8s on Azure
+        # - name: Install kubectl CLI
+        #   uses: azure/setup-kubectl@v3
+        #   with:
+        #     version: 'v1.26.0'
+
+        # - name: Setup Kubeconfig file
+        #   uses: azure/k8s-set-context@v3
+        #   with:
+        #     method: kubeconfig
+        #     kubeconfig: <secret kubeconfig variable>  #The kubeconfig fie has to be stored in repository secrets
+
+        # For K8s on GKE
+        - name: Setup gcloud CLI
+          uses: 'google-github-actions/auth@v2'
+          with:
+            credentials_json: '${{ secrets.GCP_SA_KEY }}'
+    
+        - id: 'get-credentials'
+          uses: 'google-github-actions/get-gke-credentials@v2'
+          with:
+            cluster_name: 'autopilot-cluster-1'
+            location: 'us-central1'
+
+        - name: Fetch Kubernetes Cluster Details
+          run: |
+            kubectl version --short
+            echo -----------------------------------------------
+            kubectl get nodes
+
+
 
