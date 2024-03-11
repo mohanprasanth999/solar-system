@@ -221,13 +221,12 @@ jobs:
           # echo "INGRESS_IP=$(kubectl -n ingress-nginx get services ingress-nginx-controller -o jsonpath="{.status.loadBalancer.ingress[0].ip}")" >> $GITHUB_ENV
           # The values is stored in INGRESS_IP env variable and this can be used across all jobs or steps in a workflow
             
-
         - name: Replace Tokens in Manifests file
           uses: cschleiden/replace-tokens@v1
           with:
             tokenPrefix: '_{_'  #Manifest files has some varibles like _{_NAMESPACE_}_. 
             tokenSuffix: '_}_'
-            files: '["kubernetes/development/*.yamk"]'   #Manifests file relative path and it finds these variables in those files with this prefix and suffix
+            files: '["kubernetes/development/*.yaml"]'   #Manifests file relative path and it finds these variables in those files with this prefix and suffix
           env:   #List the variables to replace with the values listed below
             NAMESPACE: ${{ vars.NAMESPACE }}
             REPLICAS: ${{ vars.REPLICAS }}
