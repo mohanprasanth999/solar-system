@@ -7,18 +7,23 @@ metadata:
   name: solar-system
   namespace: _{_NAMESPACE_}_
 spec:
-    rules:
-    - host: solar-system-_{_NAMESPACE_}_._{_INGRESS_IP_}_.nip.io
-      http:
-        paths:
-        - backend:
-            service:
-              name: solar-system
-              port:
-                number: 3000
-          path: /
-          pathType: Prefix
-    tls:
-    - hosts:
-      - solar-system-_{_NAMESPACE_}_._{_INGRESS_IP_}_.nip.io
-      secretName: ingress-local-tls
+  defaultBackend:
+    service:
+      name: solar-system
+      port:
+        number: 3000
+    # rules:
+    # - host: solar-system-_{_NAMESPACE_}_._{_INGRESS_IP_}_.nip.io
+    #   http:
+    #     paths:
+    #     - backend:
+    #         service:
+    #           name: solar-system
+    #           port:
+    #             number: 3000
+    #       path: /
+    #       pathType: Prefix
+    # tls:
+    # - hosts:
+    #   - solar-system-_{_NAMESPACE_}_._{_INGRESS_IP_}_.nip.io
+    #   secretName: ingress-local-tls
