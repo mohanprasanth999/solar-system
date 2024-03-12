@@ -265,7 +265,7 @@ jobs:
 
     dev-integration-testing:
       name: Dev Integration Testing
-      needs: prod-deploy
+      needs: dev-deploy
       runs-on: ubuntu-latest
       steps:
         - name: Test URL Output using CURL and JQ
@@ -349,7 +349,7 @@ jobs:
 
     prod-integration-testing:
       name: Dev Integration Testing
-      needs: Dev-Deploy
+      needs: dev-deploy
       runs-on: ubuntu-latest
       steps:
         - name: Test URL Output using CURL and JQ
