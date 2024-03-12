@@ -312,9 +312,9 @@ jobs:
             echo -----------------------------------------------
             kubectl get nodes
 
-        - name: Save Nginx Ingress controller IP as GITHUB Environment variable
-          run: |
-            echo "INGRESS_IP=34.160.218.146" >> $GITHUB_ENV 
+        # - name: Save Nginx Ingress controller IP as GITHUB Environment variable #not required
+        #   run: |
+        #     echo "INGRESS_IP=34.160.218.146" >> $GITHUB_ENV 
        
         - name: Replace Tokens in Manifests file
           uses: cschleiden/replace-tokens@v1
@@ -326,7 +326,7 @@ jobs:
             NAMESPACE: ${{ vars.NAMESPACE }}
             REPLICAS: ${{ vars.REPLICAS }}
             IMAGE: ${{ vars.DOCKERHUB_USERNAME }}/solar-system:${{ github.sha }}
-            INGRESS_IP: ${{ env.INGRESS_IP }}
+            # INGRESS_IP: ${{ env.INGRESS_IP }} #not required
 
         - name: Check files to varify variables replacement
           run: |
@@ -342,7 +342,7 @@ jobs:
             --dry-run=client \
             -o yaml | kubectl apply -f -
 
-        - name: Deploy to dev env
+        - name: Deploy to prod env
           run: kubectl apply -f kubernetes/production
 
         - name: Set App Ingress Host URL   #For storing the INGRESS URL to use it in the next job
@@ -359,7 +359,7 @@ jobs:
       steps:
         - name: Test URL Output using CURL and JQ
           env:
-            URL: ${{ needs.prod-deploy.outputs.APP_INGRESS_URL}}  #using outpute stored in previous job; Instead of actual URL, we are using IP address
+            URL: ${{ needs.prod-deploy.outputs.APP_INGRESS_URL}}  
           run: |
             echo "$URL" 
             echo "-------------------------------------------------"
