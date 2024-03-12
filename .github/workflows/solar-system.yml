@@ -276,7 +276,6 @@ jobs:
             echo "-------------------------------------------------"
             curl http://$URL/live -s -k | jq -r .status | grep -i live
 
-
     prod-deploy:
       needs: dev-integration-testing
       environment:       
@@ -348,8 +347,8 @@ jobs:
           # echo "APP_INGRESS_HOST=$(kubectl -n ${{ vars.NAMESPACE }} get ingress -o jsonpath="{.items[0].spec.tls[0].hosts[0]}")" >> $GITHUB_OUTPUT"  #This is for different ingress implementation
 
     prod-integration-testing:
-      name: Dev Integration Testing
-      needs: dev-deploy
+      name: Prod Integration Testing
+      needs: prod-deploy
       runs-on: ubuntu-latest
       steps:
         - name: Test URL Output using CURL and JQ
