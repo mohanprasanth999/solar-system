@@ -178,6 +178,11 @@ jobs:
 
     Dev-Deploy:
       needs: Docker
+      environment:        #applies all protection rules before starting the job
+        name: development
+        url: http://${{ steps.set-ingress-host-address.outputs.APP_INGRESS_HOST }}  
+        #if this job is creating an app and it is accessible using http url. Its goining to be displayed on couple of UIs in GitHub so that it is easy for manager or developers to quickly review the URL before proceeding further
+
       outputs:
         APP_INGRESS_URL: ${{ steps.set-ingress-host-address.outputs.APP_INGRESS_HOST }}  #OUTPUT variable mapping for Ingress URL
       runs-on: ubuntu-latest
