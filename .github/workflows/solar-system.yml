@@ -216,7 +216,7 @@ jobs:
 
         - name: Save Nginx Ingress controller IP as GITHUB Environment variable
           run: |
-            echo "INGRESS_IP=34.149.46.139" >> $GITHUB_ENV 
+            echo "INGRESS_IP=34.160.218.146" >> $GITHUB_ENV 
           # for demo purpose, this value is hardcoded. Otherwise,
           # echo "INGRESS_IP=$(kubectl -n ingress-nginx get services ingress-nginx-controller -o jsonpath="{.status.loadBalancer.ingress[0].ip}")" >> $GITHUB_ENV
           # The values is stored in INGRESS_IP env variable and this can be used across all jobs or steps in a workflow
