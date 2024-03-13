@@ -105,11 +105,11 @@ jobs:
               run: npm run coverage
 
             - name: Archive Test Result
-              uses: actions/upload-artifact@v4
+              uses: actions/upload-artifact@v3
               with:
-                name: c
+                name: Code-Coverage-Result
                 path: coverage
-                #retention-days: 5
+                retention-days: 5
     
     reports-gcs:
       name: GCS - Upload Reports
@@ -120,7 +120,7 @@ jobs:
         - name: Download Mocha Test Artifact
           uses: actions/download-artifact@v3
           with: 
-            name: c
+            name: Mocha-Test-Result
 
         - name: sleep
           run: sleep 60s
@@ -128,7 +128,7 @@ jobs:
         - name: Download Code Coverage Artifact
           uses: actions/download-artifact@v3
           with: 
-            name: c
+            name: Code-Coverage-Result
 
         - name: Merge Test files
           run: |
