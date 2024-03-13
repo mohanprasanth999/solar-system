@@ -122,6 +122,9 @@ jobs:
           with: 
             name: Mocha-Test-Result
 
+        - name: sleep
+          run: sleep 60s
+
         - name: Download Code Coverage Artifact
           uses: actions/download-artifact@v3
           with: 
