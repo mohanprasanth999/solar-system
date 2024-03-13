@@ -41,14 +41,21 @@ jobs:
               with:
                 node-version: ${{ matrix.nodejs_version }}
 
-            - name: Cache NPM Dependencies
-              uses: actions/cache@v3
-              with:
-                path: node_modules
-                key: ${{ runner.os }}-node-modules-${{ hashFiles('package-lock.json') }}
+            # - name: Cache NPM Dependencies
+            #   uses: actions/cache@v3
+            #   with:
+            #     path: node_modules
+            #     key: ${{ runner.os }}-node-modules-${{ hashFiles('package-lock.json') }}
 
-            - name: Install Dependencies
-              run: npm install
+            # - name: Install Dependencies
+            #   run: npm install
+
+            #Using custom Action
+            - name: Composite Action - Cache and Install Dependencies
+              uses: ./.github/custom-actions/npm-action  #relative path of the action
+              with:
+                path-of-folder: node-modules
+
 
             - name: Unit Testing
               id: node-unit-testing-step    
@@ -91,14 +98,19 @@ jobs:
             #   with:
             #     node-version: 18
 
-            - name: Cache NPM Dependencies
-              uses: actions/cache@v3
-              with:
-                path: node_modules
-                key: ${{ runner.os }}-node-modules-${{ hashFiles('package-lock.json') }}
+            # - name: Cache NPM Dependencies
+            #   uses: actions/cache@v3
+            #   with:
+            #     path: node_modules
+            #     key: ${{ runner.os }}-node-modules-${{ hashFiles('package-lock.json') }}
 
-            - name: Install Dependencies
-              run: npm install
+            # - name: Install Dependencies
+            #   run: npm install
+
+            - name: Composite Action - Cache and Install Dependencies
+              uses: ./.github/custom-actions/npm-action  #relative path of the action
+              with:
+                path-of-folder: node-modules
 
             - name: Check Code Coverage
               continue-on-error: true   #We want this job to be run even if the coverage is below the threshold
