@@ -1,0 +1,17 @@
+on:
+    pull_request: 
+          types:
+           - opened
+
+jobs:
+    testing-action:
+      runs-on: ubuntu-latest
+      permissions:
+        issues: write
+        pull-requests: write
+      steps:
+      - name: Post PR Comment
+        uses: mohanprasanth999/docker-action-pr-giphy-comment@main #referring to action in another repo
+        with:
+            github-token: ${{ secrets.GITHUB_TOKEN }}
+            giphy-api-key: ${{ secrets.GIPHY_API_KEY }}  #stored in repo secret
