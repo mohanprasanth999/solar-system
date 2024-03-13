@@ -181,6 +181,10 @@ jobs:
       #this job should run only when it is triggered by feature branch
       needs: docker
       uses: ./.github/workflows/reuse-deployment.yml
+      secrets:
+        sa_key: ${{ secrets.GCP_SA_KEY}}   #passing required secrets to called workflow
+        mongodb-password: ${{ secrets.MONGO_PASSWORD }}
+
 
     dev-integration-testing:
       name: Dev Integration Testing
@@ -201,6 +205,9 @@ jobs:
       #this job should run only when it is triggred by main branch commit  
       needs: docker  #we are going to run the workflow on either dev or prod env. So this deployement is independent of dev intergation testing. Hence it should depend on docker job after image creation for prod deployment
       uses: ./.github/workflows/reuse-deployment.yml
+      secrets:
+        sa_key: ${{ secrets.GCP_SA_KEY}}   #passing required secrets to called workflow
+        mongodb-password: ${{ secrets.MONGO_PASSWORD }}
       
     prod-integration-testing:
       name: Prod Integration Testing
