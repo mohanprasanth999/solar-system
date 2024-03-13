@@ -68,7 +68,7 @@ jobs:
                 path: test-results.xml
 
     #Need to setup nodejs first since its a different job  ##runs in parallel with unit-testing job
-    code-coverage:       #Example of utilizing job container(for running steps) and service container
+    code-coverage:       #Example of utilizing job containerur(for running steps) and service container
         name: Code-Coverage
         container:
           image: node:18
@@ -184,7 +184,10 @@ jobs:
       secrets:
         sa_key: ${{ secrets.GCP_SA_KEY}}   #passing required secrets to called workflow
         mongodb-password: ${{ secrets.MONGO_PASSWORD }}
-
+      with:
+        mongodb-uri: ${{ vars.MONGO_URI }}
+        environment: development
+        k8s-manifest-dir: kuberenetes/development/
 
     dev-integration-testing:
       name: Dev Integration Testing
@@ -208,6 +211,10 @@ jobs:
       secrets:
         sa_key: ${{ secrets.GCP_SA_KEY}}   #passing required secrets to called workflow
         mongodb-password: ${{ secrets.MONGO_PASSWORD }}
+      with:
+        mongodb-uri: ${{ vars.MONGO_URI }}
+        environment: production
+        k8s-manifest-dir: production/development/
       
     prod-integration-testing:
       name: Prod Integration Testing

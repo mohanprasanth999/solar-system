@@ -2,17 +2,37 @@ name: Deployment- Reusabble Workflow
 
 on:
     workflow_call:
+      inputs:
+        mongodb-uri:
+          required: true
+          type: string
+        kubectl-version:
+          required: false
+          type: string
+          default: v1.29.0
+        k8s-manifest-dir:
+          description: Directory containing kubernetes manifest files
+          required: true
+          default: kubernetes/
+          type: string
+        environment:
+          required: true
+          type: string
+          default: development
+        
       secrets:
         sa_key:
           required: true
         mongodb-password:
           required: true
+        
+
 
 
 jobs:
     reuse-deploy:
       environment:        #applies all protection rules before starting the job
-        name: development
+        name: ${{ inputs.environment }}
         url: http://${{ steps.set-ingress-host-address.outputs.APP_INGRESS_HOST }}  
         #if this job is creating an app and it is accessible using http url. Its goining to be displayed on couple of UIs in GitHub so that it is easy for manager or developers to quickly review the URL before proceeding further
 
@@ -27,7 +47,7 @@ jobs:
         # - name: Install kubectl CLI
         #   uses: azure/setup-kubectl@v3
         #   with:
-        #     version: 'v1.26.0'
+        #     version: ${{ inputs.kubectl-version }}
 
         # - name: Setup Kubeconfig file
         #   uses: azure/k8s-set-context@v3
@@ -66,7 +86,7 @@ jobs:
           with:
             tokenPrefix: '_{_'  #Manifest files has some varibles like _{_NAMESPACE_}_. 
             tokenSuffix: '_}_'
-            files: '["kubernetes/development/*.yaml"]'   #Manifests file relative path and it finds these variables in those files with this prefix and suffix
+            files: '["${{ inputs.k8s-manifest-dir }}*.yaml"]'   #Manifests file relative path and it finds these variables in those files with this prefix and suffix
           env:   #List the variables to replace with the values listed below
             NAMESPACE: ${{ vars.NAMESPACE }}
             REPLICAS: ${{ vars.REPLICAS }}
@@ -75,12 +95,12 @@ jobs:
 
         - name: Check files to varify variables replacement
           run: |
-            cat kubernetes/development/*.yaml
+            cat ${{ inputs.k8s-manifest-dir }}/*.yaml
 
         - name: Create MongoDB Secret  #we have to pass the credentials by creating k8s secret
           run: |
             kubectl -n ${{ vars.NAMESPACE }} create secret generic mongo-db-creds \
-            --from-literal=MONGO_URI=${{ env.MONGO_URI }} \
+            --from-literal=MONGO_URI=${{ inputs.MONGO_URI }} \
             --from-literal=MONGO_USERNAME=${{ vars.MONGO_USERNAME }} \
             --from-literal=MONGO_PASSWORD=${{ secrets.mongodb-password }} \
             --save-config \
@@ -88,7 +108,7 @@ jobs:
             -o yaml | kubectl apply -f -
 
         - name: Deploy to prod env
-          run: kubectl apply -f kubernetes/development
+          run: kubectl apply -f ${{ inputs.k8s-manifest-dir }}
 
         - name: Set App Ingress Host URL   #For storing the INGRESS URL to use it in the next job
           id: set-ingress-host-address
