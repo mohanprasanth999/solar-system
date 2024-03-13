@@ -1,0 +1,92 @@
+name: Deployment- Reusabble Workflow
+
+on:
+    workflow_call:
+
+jobs:
+    reuse-deploy:
+      environment:        #applies all protection rules before starting the job
+        name: development
+        url: http://${{ steps.set-ingress-host-address.outputs.APP_INGRESS_HOST }}  
+        #if this job is creating an app and it is accessible using http url. Its goining to be displayed on couple of UIs in GitHub so that it is easy for manager or developers to quickly review the URL before proceeding further
+
+      outputs:
+        APP_INGRESS_URL: ${{ steps.set-ingress-host-address.outputs.APP_INGRESS_HOST }}  #OUTPUT variable mapping for Ingress URL
+      runs-on: ubuntu-latest
+      steps:
+        - name: Checkout Repo
+          uses: actions/checkout@v4
+        
+        # For K8s on Azure
+        # - name: Install kubectl CLI
+        #   uses: azure/setup-kubectl@v3
+        #   with:
+        #     version: 'v1.26.0'
+
+        # - name: Setup Kubeconfig file
+        #   uses: azure/k8s-set-context@v3
+        #   with:
+        #     method: kubeconfig
+        #     kubeconfig: <secret kubeconfig variable>  #The kubeconfig fie has to be stored in repository secrets
+
+        # For K8s on GKE
+        - name: Setup gcloud CLI
+          uses: 'google-github-actions/auth@v2'
+          with:
+            credentials_json: ${{ secrets.GCP_SA_KEY }}
+    
+        - id: 'get-credentials'
+          uses: 'google-github-actions/get-gke-credentials@v2'
+          with:
+            cluster_name: autopilot-cluster-1
+            project_id: diesel-harmony-416707
+            location: us-central1
+
+        - name: Fetch Kubernetes Cluster Details
+          run: |
+            kubectl version
+            echo -----------------------------------------------
+            kubectl get nodes
+
+        - name: Save Nginx Ingress controller IP as GITHUB Environment variable
+          run: |
+            echo "INGRESS_IP=34.160.218.146" >> $GITHUB_ENV 
+          # for demo purpose, this value is hardcoded. Otherwise,
+          # echo "INGRESS_IP=$(kubectl -n ingress-nginx get services ingress-nginx-controller -o jsonpath="{.status.loadBalancer.ingress[0].ip}")" >> $GITHUB_ENV
+          # The values is stored in INGRESS_IP env variable and this can be used across all jobs or steps in a workflow
+            
+        - name: Replace Tokens in Manifests file
+          uses: cschleiden/replace-tokens@v1
+          with:
+            tokenPrefix: '_{_'  #Manifest files has some varibles like _{_NAMESPACE_}_. 
+            tokenSuffix: '_}_'
+            files: '["kubernetes/development/*.yaml"]'   #Manifests file relative path and it finds these variables in those files with this prefix and suffix
+          env:   #List the variables to replace with the values listed below
+            NAMESPACE: ${{ vars.NAMESPACE }}
+            REPLICAS: ${{ vars.REPLICAS }}
+            IMAGE: ${{ vars.DOCKERHUB_USERNAME }}/solar-system:${{ github.sha }}
+            INGRESS_IP: ${{ env.INGRESS_IP }}
+
+        - name: Check files to varify variables replacement
+          run: |
+            cat kubernetes/development/*.yaml
+
+        - name: Create MongoDB Secret  #we have to pass the credentials by creating k8s secret
+          run: |
+            kubectl -n ${{ vars.NAMESPACE }} create secret generic mongo-db-creds \
+            --from-literal=MONGO_URI=${{ env.MONGO_URI }} \
+            --from-literal=MONGO_USERNAME=${{ vars.MONGO_USERNAME }} \
+            --from-literal=MONGO_PASSWORD=${{ secrets.MONGO_PASSWORD }} \
+            --save-config \
+            --dry-run=client \
+            -o yaml | kubectl apply -f -
+
+        - name: Deploy to prod env
+          run: kubectl apply -f kubernetes/development
+
+        - name: Set App Ingress Host URL   #For storing the INGRESS URL to use it in the next job
+          id: set-ingress-host-address
+          run: |
+            echo "APP_INGRESS_HOST=$(kubectl -n ${{ vars.NAMESPACE }} get ingress -o jsonpath="{.items[0].status.loadBalancer.ingress[0].ip}")" >> "$GITHUB_OUTPUT"  
+          # echo "APP_INGRESS_HOST=$(kubectl -n ${{ vars.NAMESPACE }} get ingress -o jsonpath="{.items[0].spec.tls[0].hosts[0]}")" >> $GITHUB_OUTPUT"  #This is for different ingress implementation
+  
