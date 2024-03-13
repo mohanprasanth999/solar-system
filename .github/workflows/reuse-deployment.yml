@@ -1,4 +1,4 @@
-name: Deployment- Reusabble Workflow
+name: Deployment- Reusable Workflow
 
 on:
     workflow_call:
@@ -95,7 +95,7 @@ jobs:
 
         - name: Check files to varify variables replacement
           run: |
-            cat ${{ inputs.k8s-manifest-dir }}/*.yaml
+            cat ${{ inputs.k8s-manifest-dir }}*.yaml
 
         - name: Create MongoDB Secret  #we have to pass the credentials by creating k8s secret
           run: |
