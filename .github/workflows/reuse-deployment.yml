@@ -30,10 +30,6 @@ on:
         application-url:
           value: ${{ jobs.reuse-deploy.outputs.APP_INGRESS_URL}}
 
-
-
-
-
 jobs:
     reuse-deploy:
       environment:        #applies all protection rules before starting the job
