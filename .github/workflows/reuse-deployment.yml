@@ -26,6 +26,10 @@ on:
         mongodb-password:
           required: true
         
+      outputs:   #For making output variables used in the job accessible to other jobs in caller workflow
+        application-url:
+          value: ${{ jobs.reuse-deploy.outputs.APP_INGRESS_URL}}
+
 
 
 

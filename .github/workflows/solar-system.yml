@@ -197,7 +197,7 @@ jobs:
       steps:
         - name: Test URL Output using CURL and JQ
           env:
-            URL: ${{ needs.dev-deploy.outputs.APP_INGRESS_URL}}  #using outpute stored in previous job; Instead of actual URL, we are using IP address
+            URL: ${{ needs.dev-deploy.outputs.application-url}}  #using output stored in previous job; Instead of actual URL, we are using IP address.  #referenece to the output in reusable workflow called by prod-deploy job
           run: |
             echo "$URL" 
             echo "-------------------------------------------------"
@@ -224,7 +224,7 @@ jobs:
       steps:
         - name: Test URL Output using CURL and JQ
           env:
-            URL: ${{ needs.prod-deploy.outputs.APP_INGRESS_URL}}  
+            URL: ${{ needs.prod-deploy.outputs.application-url}}  #referenece to the output in reusable workflow called by prod-deploy job
           run: |
             echo "$URL" 
             echo "-------------------------------------------------"
